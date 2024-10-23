@@ -3,6 +3,7 @@ const app = express()
 const router = require('./routes')
 const morgan = require('morgan')
 const DBConnect = require('./configs.js/dbConnect')
+require('dotenv').config()
 
 app.use(express.json())
 app.use(morgan('dev'))
@@ -14,7 +15,7 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500
-  console.error(err.stack)
+  console.error(err)
   res.status(statusCode).json({
     status: 'error',
     message: err.message || 'Internal Server Error',
@@ -24,6 +25,6 @@ app.use((err, req, res, next) => {
 
 DBConnect()
 
-app.listen(3000, () => {
-  console.log('server is running')
+app.listen(process.env.PORT, () => {
+  console.log(`server is running on port ${process.env.PORT}`)
 })
