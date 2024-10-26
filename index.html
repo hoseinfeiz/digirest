@@ -1,82 +1,56 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Page Title</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-      crossorigin="anonymous"
-    />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload Image with Fetch</title>
   </head>
   <body>
-    <div class="container">
-      <div class="row">
-        <form action="#" id="form">
-          <div class="form-group">
-            <label>تصویر مقاله : </label>
-            <input type="file" id="image" name="image" class="form-control" />
-          </div>
-          <button type="submit" class="btn btn-danger">ارسال</button>
-        </form>
-      </div>
-    </div>
+    <h2>Upload an Image</h2>
+    <form id="uploadForm">
+      <label for="image">Select an image:</label>
+      <input type="file" id="image" name="image" accept="image/*" required />
+      <br /><br />
+      <button type="button" onclick="uploadImage()">Upload Image</button>
+    </form>
+
+    <p id="status"></p>
 
     <script>
-      document.getElementById('form').addEventListener('submit', (e) => {
-        e.preventDefault()
+      async function uploadImage() {
+        const fileInput = document.getElementById('image')
+        const statusText = document.getElementById('status')
 
-        // Construct GraphQL mutation request
-        let data = {
-          query: `
-              mutation addMultimedia($image: Upload!) {
-                  multimedia(image: $image) {
-                      status
-                      message
-                  }
-              }
-          `,
-          variables: {
-            image: null, // Placeholder for the file
-          },
+        if (fileInput.files.length === 0) {
+          statusText.textContent = 'Please select an image file.'
+          return
         }
 
-        // Map to associate file upload
-        let map = {
-          0: ['variables.image'],
+        const formData = new FormData()
+        formData.append('image', fileInput.files[0])
+
+        try {
+          const response = await fetch('http://localhost:3000/multimedia', {
+            headers: {
+              token:
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwaG9uZSI6IjA5MTIwNTEwNTYzIiwiaWF0IjoxNzI5OTI1ODAzLCJleHAiOjE3MzAwMTIyMDN9.KaJQy5kQQpXbZx50-9D9G1Xz24AldiBlxTyYGE8Fcng',
+            },
+            method: 'POST',
+            body: formData,
+          })
+
+          const result = await response.json()
+
+          if (response.ok) {
+            statusText.textContent = 'Image uploaded successfully!'
+          } else {
+            statusText.textContent = `Error: ${result.message}`
+          }
+        } catch (error) {
+          statusText.textContent = 'Upload failed. Please try again.'
+          console.error('Error uploading image:', error)
         }
-
-        // Get the file from the input field
-        let file = document.getElementById('image').files[0]
-
-        // Create FormData and append the data
-        let formD = new FormData()
-        formD.append('operations', JSON.stringify(data)) // Add the operations object
-        formD.append('map', JSON.stringify(map)) // Add the file map
-        formD.append(0, file, file.name) // Append the file
-
-        // Set up fetch options, no need for Content-Type since FormData handles it
-        let options = {
-          method: 'POST',
-          headers: {
-            token:
-              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MDczNGVjOWM2NDYwMzE3MjBlNjdkZCIsImlhdCI6MTcyOTE1NzM4OCwiZXhwIjoxNzI5MjQzNzg4fQ.5RG0cfNgQZa1x-A62S7Zq-QLQl6dVy2FLARdxzJXF7o',
-            'x-apollo-operation-name': 'addMultimedia',
-          },
-          body: formD, // Pass FormData directly
-        }
-
-        // Send the request
-        let url = 'http://localhost:4000/graphql'
-
-        fetch(url, options)
-          .then((res) => res.json())
-          .then((res) => console.log(res))
-          .catch((err) => console.log(err))
-      })
+      }
     </script>
   </body>
 </html>

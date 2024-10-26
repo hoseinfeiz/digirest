@@ -1,10 +1,13 @@
 const express = require('express')
 const app = express()
+const cors = require('cors')
 const router = require('./routes')
 const morgan = require('morgan')
 const DBConnect = require('./configs.js/dbConnect')
 require('dotenv').config()
 
+app.use('/uploads', express.static('uploads'))
+app.use(cors())
 app.use(express.json())
 app.use(morgan('dev'))
 app.use('/', router)

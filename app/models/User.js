@@ -24,15 +24,11 @@ User.statics.createToken = async (req, exp) => {
 }
 
 User.statics.checkToken = async (req, next) => {
-  if (req.headers.token) {
-    try {
-      const verify = await jwt.verify(req.headers.token, process.env.SECRET_KEY)
-      return verify
-    } catch (error) {
-      next(error)
-    }
-  } else {
-    return null
+  try {
+    const verify = await jwt.verify(req.headers.token, process.env.SECRET_KEY)
+    return verify
+  } catch (error) {
+    throw createCustomError('توکن نامعتبر است', 401)
   }
 }
 
