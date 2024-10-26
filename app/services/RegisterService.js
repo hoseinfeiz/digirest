@@ -14,8 +14,7 @@ exports.register = async (req, next) => {
     if (check) {
       throw createCustomError('این کاربر قبلا ثبت نام کرده است', 409)
     } else {
-      const salt = await bcrypt.genSaltSync(10)
-      console.log('salt', salt)
+      const salt = bcrypt.genSaltSync(parseInt(process.env.SALT))
       const hash = bcrypt.hashSync(req.body.password, salt)
       const userId = await User.create({
         phone: req.body.phone,
@@ -24,7 +23,9 @@ exports.register = async (req, next) => {
       return userId
     }
   } catch (error) {
-    // console.log('error here is', error)
+    if (!(error.statusCode === 409 || error.statusCode === 400)) {
+      next(createCustomError('خطا در ذخیره دیتا در دیتابیس رخ داده است', 500))
+    }
     next(error)
   }
 }

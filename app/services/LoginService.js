@@ -1,4 +1,3 @@
-var jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const User = require('../models/User')
 const createCustomError = require('../../utils/customError')
@@ -15,14 +14,7 @@ exports.createToken = async (req, next) => {
     if (user) {
       const check = bcrypt.compareSync(req.body.password, user.password)
       if (check) {
-        const token = await jwt.sign(
-          { phone: user.phone },
-          process.env.SECRET_KEY,
-          {
-            expiresIn: '1d',
-          }
-        )
-        return token
+        return await User.createToken(req, '1d')
       } else {
         throw createCustomError('پسوورد اشتباه است', 401)
       }

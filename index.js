@@ -15,14 +15,13 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500
-  console.error(err)
+
   res.status(statusCode).json({
     status: 'error',
     message: err.message || 'Internal Server Error',
     statusCode: statusCode,
   })
 })
-
 DBConnect()
 
 app.listen(process.env.PORT, () => {
