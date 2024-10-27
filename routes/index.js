@@ -19,5 +19,6 @@ router.post(
   upload.single('image'),
   MultimediaController.post
 )
+router.get('/multimedia', check, isAdmin, MultimediaController.get)
 
 module.exports = router

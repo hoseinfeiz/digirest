@@ -1,22 +1,26 @@
 const createCustomError = require('../../utils/customError')
-const { dir } = require('../../helper/saveImage')
-const multimedia = require('../services/MultimediaService')
+const { multimediaDB, getMultimedia } = require('../services/MultimediaService')
+const path = require('path')
 exports.post = async (req, res, next) => {
   try {
     if (!req.file) {
       throw createCustomError('فایل آپلود نشد', 400)
     }
-
-    const filepath = req.file.path
+    const filepath = path.relative('public', req.file.path)
     const filename = req.file.filename
-    console.log('dirrr', dir)
-    const image_id = await multimedia(filename, dir)
+
+    const image_id = await multimediaDB(filename, filepath)
     res.status(200).json({
       status: 200,
       message: 'تصویر بدرستی ذخیره شد',
     })
   } catch (error) {
     console.error(error)
-    throw createCustomError('خطا در ذخیره سازی تصویر رخ داد', 400)
+    next(error)
   }
+}
+
+exports.get = async (req, res, next) => {
+  const allMultimedia = await getMultimedia(req, next)
+  res.status(200).json(allMultimedia)
 }
