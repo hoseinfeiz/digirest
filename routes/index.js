@@ -1,4 +1,6 @@
 const express = require('express')
+
+const { upload } = require('../helper/saveImage')
 const router = express.Router()
 const LoginController = require('../app/controllers/LoginController')
 const RegisterController = require('../app/controllers/RegisterController')
@@ -10,6 +12,12 @@ router.get('/', homeController)
 router.get('/login', LoginController.get)
 router.post('/login', LoginController.post)
 router.post('/register', RegisterController.post)
-router.post('/multimedia', check, isAdmin, MultimediaController.post)
+router.post(
+  '/multimedia',
+  check,
+  isAdmin,
+  upload.single('image'),
+  MultimediaController.post
+)
 
 module.exports = router

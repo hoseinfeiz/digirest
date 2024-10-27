@@ -1,22 +1,22 @@
-const { upload, saveFileToDatabase } = require('../services/MultimediaService')
-
-exports.post = (req, res, next) => {
-  upload(req, res, async (err) => {
-    if (err) {
-      return next(err)
-    }
-
+const createCustomError = require('../../utils/customError')
+const { dir } = require('../../helper/saveImage')
+const multimedia = require('../services/MultimediaService')
+exports.post = async (req, res, next) => {
+  try {
     if (!req.file) {
-      return res.status(400).json({ message: 'فایلی برای آپلود وجود ندارد' })
+      throw createCustomError('فایل آپلود نشد', 400)
     }
 
-    try {
-      await saveFileToDatabase(req.file)
-      res.status(200).json({
-        message: 'تصویر بدرستی ذخیره شد',
-      })
-    } catch (error) {
-      next(error) // Pass any database errors to error-handling middleware
-    }
-  })
+    const filepath = req.file.path
+    const filename = req.file.filename
+    console.log('dirrr', dir)
+    const image_id = await multimedia(filename, dir)
+    res.status(200).json({
+      status: 200,
+      message: 'تصویر بدرستی ذخیره شد',
+    })
+  } catch (error) {
+    console.error(error)
+    throw createCustomError('خطا در ذخیره سازی تصویر رخ داد', 400)
+  }
 }
