@@ -26,16 +26,22 @@ const getMultimedia = async (req, next) => {
     const allDocs = await Multimedia.paginate({}, { page, limit })
     const allMedias = allDocs.docs
 
-    for (let index = 0; index < allMedias.length; index++) {
-      const element = allMedias[index]
-      let img = path.join(__dirname, `../../public/${element.dir}`)
-      sizeOf(img, (err, dimensions) => {
-        element.dimWidth = dimensions.width
-        element.dimHeight = dimensions.height
-        element.format = dimensions.type
-      })
+    try {
+      await Promise.all(
+        allMedias.map((element) => {
+          let img = path.join(__dirname, `../../public/${element.dir}`)
+          let dimensions = sizeOf(img)
+          element.dimWidth = dimensions.width
+          element.dimHeight = dimensions.height
+          element.format = dimensions.type
+        })
+      )
+    } catch (error) {
+      console.error(error)
+      throw createCustomError('در گرفتن اندازه تصویر خطایی بوجود آمده است', 500)
     }
-    return allDocs.docs
+
+    return allMedias
   } catch (error) {
     console.log(error)
     next(error)
