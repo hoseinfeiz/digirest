@@ -40,7 +40,72 @@ exports.getCategories = async (req, next) => {
         { page, limit, select: fieldSelection, populate: { path: 'image' } }
       )
       return cats.docs
+    } else if (!req.body.mainCategory && req.body.parentCategory) {
+      let cats = await Category.paginate(
+        { parent: req.body.catID },
+        {
+          page,
+          limit,
+          select: fieldSelection,
+          populate: [
+            { path: 'parent', select: 'name parent' },
+            { path: 'image', select: 'name dir' },
+          ],
+        }
+      )
+      return cats.docs
     }
+  } catch (error) {
+    console.error(error)
+    next(error)
+  }
+}
+
+exports.putCategories = async (req, next) => {
+  try {
+    const { id } = req.params
+    const { name, label, image, parent } = req.body
+    if (validator.isEmpty(name)) {
+      throw createCustomError('فیلد نام دسته خالی است', 400)
+    }
+    if (validator.isEmpty(name)) {
+      throw createCustomError('فیلد تصویر دسته خالی است', 400)
+    }
+
+    const newCat = await Category.findByIdAndUpdate(
+      id,
+      { name, label, image, parent },
+      { new: true, runValidators: true }
+    )
+    return newCat
+  } catch (error) {
+    console.error(error)
+    next(error)
+  }
+}
+exports.patchCategories = async (req, next) => {
+  try {
+    const { id } = req.params
+    const { updates } = req.body
+
+    const updatedCat = await Category.findByIdAndUpdate(id, updates, {
+      new: true,
+      runValidators: true,
+    })
+    return updatedCat
+  } catch (error) {
+    console.error(error)
+    next(error)
+  }
+}
+exports.deleteCategories = async (req, next) => {
+  try {
+    const { id } = req.params
+    const deletedCat = await Category.findByIdAndDelete(id)
+    if (!deletedCat) {
+      throw createCustomError('دسته بندی مورد نظر یافت نشد', 404)
+    }
+    return deletedCat
   } catch (error) {
     console.error(error)
     next(error)

@@ -7,6 +7,7 @@ const RegisterController = require('../app/controllers/RegisterController')
 const homeController = require('../app/controllers/homeController')
 const MultimediaController = require('../app/controllers/MultimediaController')
 const CategoryController = require('../app/controllers/CategoryController')
+const BrandController = require('../app/controllers/BrandController')
 const { check, isAdmin } = require('../helper/auth')
 
 router.get('/', homeController)
@@ -15,6 +16,9 @@ router.post('/login', LoginController.post)
 router.post('/register', RegisterController.post)
 router.post('/category', check, isAdmin, CategoryController.post)
 router.get('/category', check, isAdmin, CategoryController.get)
+router.put('/category/:id', check, isAdmin, CategoryController.put)
+router.patch('/category/:id', check, isAdmin, CategoryController.patch)
+router.delete('/category/:id', check, isAdmin, CategoryController.delete)
 router.post(
   '/multimedia',
   check,
@@ -23,5 +27,6 @@ router.post(
   MultimediaController.post
 )
 router.get('/multimedia', check, isAdmin, MultimediaController.get)
+router.post('/brand', check, isAdmin, BrandController.post)
 
 module.exports = router
