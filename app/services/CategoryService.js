@@ -32,7 +32,7 @@ exports.getCategories = async (req, next) => {
   const limit = req.body.limit || 10
   const { fields } = req.query
   const fieldSelection = fields ? fields.split(',').join(' ') : ''
-  console.log('fieldSelection: ', fieldSelection)
+
   try {
     if (req.body.mainCategory && !req.body.parentCategory) {
       let cats = await Category.paginate(

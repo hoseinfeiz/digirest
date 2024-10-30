@@ -31,3 +31,26 @@ exports.postBrands = async (req, next) => {
     next(error)
   }
 }
+
+exports.getBrands = async (req, next) => {
+  try {
+    const page = req.body.page || 1
+    const limit = req.body.limit || 10
+    const { fields } = req.query
+    const fieldSelection = fields ? fields.split(',').join(' ') : ''
+
+    const brands = await Brand.paginate(
+      {},
+      {
+        page,
+        limit,
+        select: fieldSelection,
+        populate: { path: 'category', select: 'name' },
+      }
+    )
+    return brands.docs
+  } catch (error) {
+    console.error(error)
+    next(error)
+  }
+}

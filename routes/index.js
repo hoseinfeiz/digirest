@@ -8,6 +8,7 @@ const homeController = require('../app/controllers/homeController')
 const MultimediaController = require('../app/controllers/MultimediaController')
 const CategoryController = require('../app/controllers/CategoryController')
 const BrandController = require('../app/controllers/BrandController')
+const SurveyController = require('../app/controllers/SurveyController')
 const { check, isAdmin } = require('../helper/auth')
 
 router.get('/', homeController)
@@ -28,5 +29,8 @@ router.post(
 )
 router.get('/multimedia', check, isAdmin, MultimediaController.get)
 router.post('/brand', check, isAdmin, BrandController.post)
+router.get('/brand', check, isAdmin, BrandController.get)
+router.post('/survey', check, isAdmin, SurveyController.post)
+router.get('/survey', check, isAdmin, SurveyController.get)
 
 module.exports = router
