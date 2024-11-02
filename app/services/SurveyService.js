@@ -58,14 +58,18 @@ exports.getSurveys = async (req, next) => {
     if (cat.parent === null) {
       throw createCustomError('معیار امتیازدهی برای دسته اصلی وجود ندارد', 404)
     }
-    const surveys = await Survey.find(
-      { category: categoryID },
-      {
-        select: fieldSelection,
-        populate: { path: 'category', select: 'name parent' },
-      }
-    )
-    return surveys.docs
+    if (cat) {
+      const surveys = await Survey.find(
+        { category: categoryID },
+        fieldSelection
+      )
+        .populate('category', 'name parent')
+        .exec()
+
+      return surveys
+    } else {
+      throw createCustomError('چنین دسته ای وجود ندارد', 404)
+    }
   } catch (error) {
     console.error(error)
     next(error)
