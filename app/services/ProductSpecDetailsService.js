@@ -35,3 +35,26 @@ exports.postProductSpecDetails = async (req, next) => {
     next(error)
   }
 }
+
+exports.getProductSpecDetails = async (req, next) => {
+  try {
+    const { specs } = req.body
+    const { fields } = req.query
+    const fieldSelection = fields ? fields.split(',').join(' ') : ''
+    let spec = await ProductSpec.findById(specs)
+
+    if (!spec) {
+      throw createCustomError('چنین مشخصاتی وجود ندارد', 404)
+    } else {
+      const list = await ProductSpecDetails.find(
+        { specs },
+        fieldSelection
+      ).populate({ path: 'specs', populate: { path: 'category' } })
+
+      return list
+    }
+  } catch (error) {
+    console.error(error)
+    next(error)
+  }
+}
