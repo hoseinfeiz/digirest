@@ -14,6 +14,7 @@ const ProductSpecDetailsController = require('../app/controllers/ProductSpecDeta
 const SellerController = require('../app/controllers/SellerController')
 const WarrantyController = require('../app/controllers/WarrantyController')
 const SliderController = require('../app/controllers/SliderController')
+const BannerController = require('../app/controllers/BannerController')
 const { check, isAdmin } = require('../helper/auth')
 
 router.get('/', homeController)
@@ -57,5 +58,7 @@ router.post('/warranty', check, isAdmin, WarrantyController.post)
 router.get('/warranty', check, isAdmin, WarrantyController.get)
 router.post('/slider', check, isAdmin, SliderController.post)
 router.get('/slider', check, isAdmin, SliderController.get)
+router.post('/banner', check, isAdmin, BannerController.post)
+router.get('/banner', check, isAdmin, BannerController.get)
 
 module.exports = router
