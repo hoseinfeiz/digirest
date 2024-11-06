@@ -86,25 +86,57 @@ exports.postProduct = async (req, next) => {
 exports.getProduct = async (req, next) => {
   try {
     const { fields } = req.query
+    const { productId, page = 1, limit = 10 } = req.body
     const fieldItems = fields ? fields.split(',').join(' ') : ''
-    const ProductList = await Product.find({}, fieldItems)
-      .populate([
+    if (productId != null) {
+      const product = await Product.findById(productId)
+      return [product]
+    } else {
+      const product = await Product.paginate(
+        {},
         {
-          path: 'category',
-          select: 'name parent',
-          populate: { path: 'parent' },
-        },
-        { path: 'image', select: 'name dir' },
-      ])
-      .exec()
-    return ProductList
+          page,
+          limit,
+          select: fieldItems,
+          populate: [
+            { path: 'category' },
+            { path: 'brand' },
+            { path: 'images' },
+            { path: 'attributes' },
+            { path: 'details' },
+          ],
+        }
+      )
+      return product.docs
+    }
   } catch (error) {
     console.error(error)
     next(error)
   }
 }
 
-const saveAttributes = async (req, next) => {
+exports.updateProduct = async (req, next) => {
+  try {
+    const { addSeller, productId } = req.body
+    if (addSeller) {
+      const attrIdArr = await saveAttributes(req, next)
+      const pId = await Product.findByIdAndUpdate(
+        productId,
+        { $push: { attributes: attrIdArr[0] } },
+        { new: true, runValidators: true }
+      )
+      return [pId]
+    } else {
+      let updateAttrIds = (await saveAttributes(req, next, 'update')) || []
+      return updateAttrIds
+    }
+  } catch (error) {
+    console.error(error)
+    next(error)
+  }
+}
+
+const saveAttributes = async (req, next, status = 'create') => {
   try {
     const { attributes } = req.body
 
@@ -113,6 +145,13 @@ const saveAttributes = async (req, next) => {
     }
     let attrArr = []
     let dataArr = []
+    let idAttrUpdate = []
+
+    if (status === 'update') {
+      let prod = await Product.findById(req.body.productId)
+      console.log('prod', prod)
+      idAttrUpdate = prod.attributes
+    }
 
     for (let index = 0; index < attributes.length; index++) {
       const element = attributes[index]
@@ -129,15 +168,6 @@ const saveAttributes = async (req, next) => {
       if (validator.isEmpty(element.color)) {
         throw createCustomError(`رنگ ${index + 1} خالی است`, 400)
       }
-      // if (validator.isEmpty(element.stock)) {
-      //   throw createCustomError(`تعداد ${index + 1} خالی است`, 400)
-      // }
-      // if (validator.isEmpty(element.price)) {
-      //   throw createCustomError(`قیمت ${index + 1} خالی است`, 400)
-      // }
-      // if (validator.isEmpty(element.discount)) {
-      //   throw createCustomError(`تخفیف ${index + 1} خالی است`, 400)
-      // }
 
       dataArr.push({
         color: element.color,
@@ -152,14 +182,30 @@ const saveAttributes = async (req, next) => {
     if (dataArr.length == attributes.length) {
       for (let index = 0; index < dataArr.length; index++) {
         const element = dataArr[index]
-        const idAttr = await ProductAttribute.create({
-          color: element.color,
-          stock: element.stock,
-          price: element.price,
-          discount: element.discout,
-          warranty: element.warranty,
-          seller: element.seller,
-        })
+        const idAttr =
+          status === 'create'
+            ? await ProductAttribute.create({
+                color: element.color,
+                stock: element.stock,
+                price: element.price,
+                discount: element.discout,
+                warranty: element.warranty,
+                seller: element.seller,
+              })
+            : await ProductAttribute.findByIdAndUpdate(
+                idAttrUpdate[index],
+                {
+                  $set: {
+                    color: element.color,
+                    stock: element.stock,
+                    price: element.price,
+                    discount: element.discout,
+                    warranty: element.warranty,
+                    seller: element.seller,
+                  },
+                },
+                { new: true, runValidators: true }
+              )
         attrArr.push(idAttr)
       }
     }

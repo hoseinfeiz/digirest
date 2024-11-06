@@ -63,5 +63,6 @@ router.post('/banner', check, isAdmin, BannerController.post)
 router.get('/banner', check, isAdmin, BannerController.get)
 router.post('/product', check, isAdmin, ProductController.post)
 router.get('/product', check, isAdmin, ProductController.get)
+router.patch('/product/update', check, isAdmin, ProductController.patch)
 
 module.exports = router
